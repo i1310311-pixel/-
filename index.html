@@ -16,152 +16,7 @@ html, body {
  <head><script src="/_sdk/telemetry_sdk.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🏖️ Summer Beach Blaster</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet">
-  <style>
-html,body{margin:0;padding:0;height:100%;overflow:hidden;font-family:'DM Sans',sans-serif}
-body{background:linear-gradient(180deg,#87CEEB 0%,#00BCD4 40%,#006064 100%)}
-#hud{position:fixed;top:12px;left:12px;padding:10px 16px;background:rgba(0,77,64,0.7);backdrop-filter:blur(4px);border-radius:14px;color:#e0f7fa;font-size:14px;font-weight:500;z-index:10;max-width:70%}
-.overlay{position:fixed;inset:0;background:rgba(0,50,50,0.75);backdrop-filter:blur(6px);display:flex;justify-content:center;align-items:center;z-index:100}
-.card{background:linear-gradient(135deg,#004d40,#00695c);border:2px solid rgba(255,255,255,0.15);border-radius:20px;padding:28px 32px;max-width:440px;width:90%;color:#e0f7fa;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.4)}
-.card h1{margin-bottom:12px;font-size:30px}
-.card p{font-size:14px;line-height:1.6;margin:3px 0;opacity:0.9}
-.card button{width:160px;margin:6px 5px;padding:11px;font-size:15px;font-weight:700;border:none;border-radius:12px;cursor:pointer;transition:transform 0.15s;color:#004d40}
-.card button:hover{transform:scale(1.05)}
-.btn-easy{background:#a5d6a7}.btn-normal{background:#4dd0e1}.btn-hard{background:#ef9a9a}
-#gameArea{position:relative;width:100%;height:100%}
-#player{position:fixed;bottom:14px;font-size:44px;pointer-events:none;transition:left 0.05s linear;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))}
-.enemy{position:absolute;font-size:34px;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.2))}
-.bullet{position:absolute;font-size:20px}
-.boss{position:absolute;font-size:64px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.4))}
-.scoring{border:3px solid #4caf50;box-shadow:0 0 8px rgba(76,175,80,0.6)}
-.penalty{border:3px solid #f44336;box-shadow:0 0 8px rgba(244,67,54,0.6)}
-.special{border:3px solid #ffeb3b;box-shadow:0 0 8px rgba(255,235,59,0.8)}
-.powerup{position:absolute;font-size:30px;animation:pulse 0.6s infinite alternate}
-.boss-bullet{position:absolute;font-size:22px}
-@keyframes pulse{to{transform:scale(1.2)}}
-.bubble{position:fixed;bottom:-20px;border-radius:50%;background:rgba(255,255,255,0.15);pointer-events:none}
-.wave{position:fixed;bottom:0;left:0;width:200%;height:80px;background:rgba(0,150,136,0.3);border-radius:50% 50% 0 0;animation:waveMove 4s ease-in-out infinite;pointer-events:none}
-.wave2{animation-delay:-2s;background:rgba(0,150,136,0.2);height:60px;bottom:10px}
-@keyframes waveMove{0%,100%{transform:translateX(0)}50%{transform:translateX(-25%)}}
-.indicator{position:fixed;top:12px;right:12px;padding:8px 14px;font-weight:700;border-radius:10px;display:none;z-index:10;font-size:13px}
-#rapidIndicator{background:#ffab00;color:#333}
-#shieldIndicator{background:#81c784;color:#fff}
-#freezeIndicator{background:#90caf9;color:#1a237e}
-#doubleIndicator{background:#ce93d8;color:#4a148c}
-#tripleIndicator{background:#ffcc80;color:#e65100}
-.milestone{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:48px;z-index:90;animation:milestoneAnim 1.5s forwards;pointer-events:none}
-@keyframes milestoneAnim{0%{opacity:1;transform:translate(-50%,-50%) scale(0.5)}30%{transform:translate(-50%,-50%) scale(1.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.8)}}
-</style>
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
-  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
-  <script src="/_sdk/resizing_sdk.js" type="text/javascript"></script>
- </head>
- <body data-template-id="__page-root">
-  <div id="startScreen" class="overlay">
-   <div class="card">
-    <h1 data-template-id="game-title" class="canva-text"></h1>
-    <p data-template-id="rule-1" class="canva-text"></p>
-    <p data-template-id="rule-2" class="canva-text"></p>
-    <p data-template-id="rule-3" class="canva-text"></p>
-    <p data-template-id="rule-4" class="canva-text"></p>
-    <p data-template-id="rule-5" class="canva-text"></p>
-    <p data-template-id="rule-6" class="canva-text"></p>
-    <hr style="border-color:rgba(255,255,255,0.2);margin:10px 0;">
-    <p data-template-id="diff-easy" class="canva-text"></p>
-    <p data-template-id="diff-normal" class="canva-text"></p>
-    <p data-template-id="diff-hard" class="canva-text"></p>
-    <div style="margin-top:14px;"><button class="btn-easy" data-template-id="btn-easy" onclick="startGame('easy')"></button> <button class="btn-normal" data-template-id="btn-normal" onclick="startGame('normal')"></button> <button class="btn-hard" data-template-id="btn-hard" onclick="startGame('hard')"></button>
-    </div>
-    <hr style="border-color:rgba(255,255,255,0.2);margin:10px 0;"><button class="btn-normal" data-template-id="btn-custom" onclick="showCustomMode()" style="width:auto;margin:8px auto;display:block;"></button>
-   </div>
-  </div>
-  <div id="resultScreen" class="overlay" style="display:none;">
-   <div class="card">
-    <h1 id="resultTitle"></h1>
-    <p id="resultText" style="white-space:pre-line"></p><button class="btn-normal" onclick="returnToStart()" data-template-id="btn-retry"></button>
-   </div>
-  </div>
-  <div id="customScreen" class="overlay" style="display:none;">
-   <div class="card" style="max-width:500px;">
-    <h1 data-template-id="custom-title" class="canva-text" style="font-size:24px;"></h1>
-    <div style="text-align:left;font-size:13px;color:#b2dfdb;margin:14px 0;">
-     <label style="display:block;margin:8px 0;"><input type="checkbox" id="chk-bomb" checked> <span data-template-id="custom-bomb" class="canva-text"></span></label> <label style="display:block;margin:8px 0;"><input type="checkbox" id="chk-shark" checked> <span data-template-id="custom-shark" class="canva-text"></span></label> <label style="display:block;margin:8px 0;"><input type="checkbox" id="chk-shell" checked> <span data-template-id="custom-shell" class="canva-text"></span></label> <label style="display:block;margin:8px 0;"><input type="checkbox" id="chk-puffer" checked> <span data-template-id="custom-puffer" class="canva-text"></span></label> <label style="display:block;margin:8px 0;"><input type="checkbox" id="chk-rapid" checked> <span data-template-id="custom-rapid" class="canva-text"></span></label> <label style="display:block;margin:8px 0;"><input type="checkbox" id="chk-shield" checked> <span data-template-id="custom-shield" class="canva-text"></span></label> <label style="display:block;margin:8px 0;"><input type="checkbox" id="chk-freeze" checked> <span data-template-id="custom-freeze" class="canva-text"></span></label> <label style="display:block;margin:8px 0;"><input type="checkbox" id="chk-double" checked> <span data-template-id="custom-double" class="canva-text"></span></label> <label style="display:block;margin:8px 0;"><input type="checkbox" id="chk-trident" checked> <span data-template-id="custom-trident" class="canva-text"></span></label> <label style="display:block;margin:8px 0;"><input type="checkbox" id="chk-tsunami" checked> <span data-template-id="custom-tsunami" class="canva-text"></span></label>
-     <hr style="border-color:rgba(255,255,255,0.2);margin:12px 0;"><label style="display:block;margin:8px 0;"> <span data-template-id="custom-time-label" class="canva-text" style="display:inline-block;min-width:80px;"></span> <input type="number" id="custom-time" value="60" min="20" max="300" style="width:60px;padding:4px;border-radius:6px;border:none;color:#004d40;font-weight:600;"> <span style="color:#b2dfdb;font-size:12px;">s</span> </label> <label style="display:block;margin:8px 0;"> <span data-template-id="custom-score-label" class="canva-text" style="display:inline-block;min-width:80px;"></span> <input type="number" id="custom-score" value="50" min="10" max="500" style="width:60px;padding:4px;border-radius:6px;border:none;color:#004d40;font-weight:600;"> </label>
-     <hr style="border-color:rgba(255,255,255,0.2);margin:12px 0;"><label style="display:block;margin:8px 0;"><input type="checkbox" id="chk-borders" checked> <span data-template-id="custom-borders" class="canva-text"></span></label>
-    </div>
-    <div style="margin-top:14px;"><button class="btn-normal" onclick="startCustom()" data-template-id="custom-start"></button> <button class="btn-easy" onclick="returnToStart()" data-template-id="custom-cancel" style="background:#90a4ae;color:#000;"></button>
-    </div>
-   </div>
-  </div>
-  <div id="hud">
-   分數：<span id="score">0</span>｜時間：<span id="time">0</span>s｜連擊：<span id="comboCounter">0</span>x<span id="comboBonus"></span> <span id="bossHp"></span>
-  </div>
-  <div id="shieldIndicator" class="indicator" style="top:44px;">
-   🛡️ 盾牌！
-  </div>
-  <div id="rapidIndicator" class="indicator">
-   ⚡ 快速射擊！
-  </div>
-  <div id="freezeIndicator" class="indicator" style="top:76px;">
-   ⏳ 時間凍結！
-  </div>
-  <div id="doubleIndicator" class="indicator" style="top:108px;">
-   🐠 雙倍分數！
-  </div>
-  <div id="tripleIndicator" class="indicator" style="top:44px;right:12px;">
-   🔱 三叉戟！
-  </div>
-  <div class="wave"></div>
-  <div class="wave wave2"></div>
-  <div id="gameArea"></div>
-  <div id="player">
-   🏄
-  </div>
-  <script src="/_sdk/editing_sdk.js"></script>
-  <script>
-const gameArea=document.getElementById("gameArea"),scoreText=document.getElementById("score"),timeText=document.getElementById("time"),bossHpText=document.getElementById("bossHp"),player=document.getElementById("player");
-
-let started=false,score=0,timeLeft=0,targetScore=0;
-let enemies=[],boss=null,bossHP=0,timerId;
-let bossDirection=1,bossBullets=[];
-let enemySpeed=3,spawnRate=700,bombRate=0.3,bossMaxHP=18;
-let rapidFire=false,rapidTimer=null;
-let shieldActive=false,shieldTimer=null;
-let freezeActive=false,freezeTimer=null;
-let doublePoints=false,doubleTimer=null;
-let tripleShot=false,tripleTimer=null;
-let lastShot=0,combo=0,maxCombo=0;
-let intervals=[],elapsed=0;
-let milestones=new Set();
-let playerX=window.innerWidth/2;
-let customConfig={bomb:true,shark:true,shell:true,puffer:true,rapid:true,shield:true,freeze:true,double:true,trident:true,tsunami:true};
-let showBorders=true;
-
-function startGame(level){
-document.getElementById("startScreen").style.display="none";
-started=true;score=0;enemies=[];boss=null;combo=0;maxCombo=0;
-shieldActive=false;rapidFire=false;freezeActive=false;doublePoints=false;tripleShot=false;
-bossBullets=[];elapsed=0;milestones.clear();
-bossHpText.textContent="";
-hideAllIndicators();
-showBorders=true;
-
-if(level==="easy"){timeLeft=70;targetScore=60;enemySpeed=2;spawnRate=800;bombRate=0.15;bossMaxHP=10;}
-else if(level==="normal"){timeLeft=55;targetScore=50;enemySpeed=3;spawnRate=600;bombRate=0.25;bossMaxHP=16;}
-else{timeLeft=45;targetScore=30;enemySpeed=3.5;spawnRate=480;bombRate=0.35;bossMaxHP=22;}
-
-scoreText.textContent=0;timeText.textContent=timeLeft;document.getElementById("comboCounter").textContent=0;
-document.getElementById("comboBonus").textContent="";
-
-timerId=setInterval(()=>{if(!freezeActive){timeLeft--;elapsed++;timeText.textContent=timeLeft;if(elapsed%15===0)enemySpeed+=0.2;if(timeLeft<=0)endGame();}},1000);
-intervals.push(setInterval(spawnEnemy,spawnRate));
-intervals.push(setInterval(checkBoss,800));
-intervals.push(setInterval(spawnBubble,600));
-intervals.push(setInterval(()=>{if(boss)moveBoss();},16));
-intervals.push(setInterval(spawnPowerup,7000));
-intervals.push(setInterval(bossAttack,2200));
+@@ -152,10 +165,30 @@ <h1 data-template-id="custom-title" class="canva-text" style="font-size:24px;"><
 intervals.push(setInterval(moveBossBullets,16));
 }
 
@@ -192,8 +47,7 @@ function hideAllIndicators(){
 function endGame(){
 started=false;clearInterval(timerId);intervals.forEach(clearInterval);intervals=[];
 document.getElementById("resultScreen").style.display="flex";
-const win=score>=targetScore;
-document.getElementById("resultTitle").textContent=win?"🎉 過關！":"😢 失敗了";
+@@ -164,18 +197,32 @@ <h1 data-template-id="custom-title" class="canva-text" style="font-size:24px;"><
 document.getElementById("resultText").textContent=`分數：${score} ／ 目標：${targetScore}\n最高連擊：${maxCombo}\n遊戲時長：${elapsed}s`;
 }
 
@@ -226,20 +80,7 @@ document.getElementById("customScreen").style.display="flex";
 function startCustom(){
 const time=parseInt(document.getElementById("custom-time").value)||60;
 const score_val=parseInt(document.getElementById("custom-score").value)||50;
-showBorders=document.getElementById("chk-borders").checked;
-customConfig={
-bomb:document.getElementById("chk-bomb").checked,
-shark:document.getElementById("chk-shark").checked,
-shell:document.getElementById("chk-shell").checked,
-puffer:document.getElementById("chk-puffer").checked,
-rapid:document.getElementById("chk-rapid").checked,
-shield:document.getElementById("chk-shield").checked,
-freeze:document.getElementById("chk-freeze").checked,
-double:document.getElementById("chk-double").checked,
-trident:document.getElementById("chk-trident").checked,
-tsunami:document.getElementById("chk-tsunami").checked
-};
-document.getElementById("customScreen").style.display="none";
+@@ -196,6 +243,14 @@ <h1 data-template-id="custom-title" class="canva-text" style="font-size:24px;"><
 startGameWithSettings(time,score_val);
 }
 
@@ -254,23 +95,7 @@ startGameWithSettings(time,score_val);
 function startGameWithSettings(duration,target){
 document.getElementById("startScreen").style.display="none";
 started=true;score=0;enemies=[];boss=null;combo=0;maxCombo=0;
-shieldActive=false;rapidFire=false;freezeActive=false;doublePoints=false;tripleShot=false;
-bossBullets=[];elapsed=0;milestones.clear();
-bossHpText.textContent="";
-hideAllIndicators();
-
-timeLeft=duration;targetScore=target;enemySpeed=2.5;spawnRate=650;bombRate=0.2;bossMaxHP=15;
-
-scoreText.textContent=0;timeText.textContent=timeLeft;document.getElementById("comboCounter").textContent=0;
-document.getElementById("comboBonus").textContent="";
-
-timerId=setInterval(()=>{if(!freezeActive){timeLeft--;elapsed++;timeText.textContent=timeLeft;if(elapsed%15===0)enemySpeed+=0.2;if(timeLeft<=0)endGame();}},1000);
-intervals.push(setInterval(spawnEnemy,spawnRate));
-intervals.push(setInterval(checkBoss,800));
-intervals.push(setInterval(spawnBubble,600));
-intervals.push(setInterval(()=>{if(boss)moveBoss();},16));
-intervals.push(setInterval(spawnPowerup,7000));
-intervals.push(setInterval(bossAttack,2200));
+@@ -219,6 +274,11 @@ <h1 data-template-id="custom-title" class="canva-text" style="font-size:24px;"><
 intervals.push(setInterval(moveBossBullets,16));
 }
 
@@ -282,14 +107,7 @@ intervals.push(setInterval(moveBossBullets,16));
 window.addEventListener("mousemove",e=>{if(started){playerX=e.clientX;player.style.left=e.clientX-22+"px";}});
 window.addEventListener("touchmove",e=>{if(started){e.preventDefault();playerX=e.touches[0].clientX;player.style.left=e.touches[0].clientX-22+"px";}},{passive:false});
 window.addEventListener("mousedown",e=>{if(started)shoot(e.clientX);});
-window.addEventListener("touchstart",e=>{if(started)shoot(e.touches[0].clientX);});
-
-function shoot(x){
-const now=Date.now();
-const cooldown=rapidFire?80:250;
-if(now-lastShot<cooldown)return;
-lastShot=now;
-if(tripleShot){fireBullet(x-20);fireBullet(x);fireBullet(x+20);}
+@@ -233,6 +293,11 @@ <h1 data-template-id="custom-title" class="canva-text" style="font-size:24px;"><
 else{fireBullet(x);}
 }
 
@@ -301,14 +119,7 @@ else{fireBullet(x);}
 function fireBullet(x){
 const bullet=document.createElement("div");
 bullet.className="bullet";bullet.textContent="💧";
-bullet.style.left=x+"px";bullet.style.top=innerHeight-70+"px";
-gameArea.appendChild(bullet);
-let y=innerHeight-70;
-const t=setInterval(()=>{
-y-=14;bullet.style.top=y+"px";
-if(boss){const r=boss.getBoundingClientRect();if(x>r.left&&x<r.right&&y>r.top&&y<r.bottom){bossHP--;bossHpText.textContent=` ｜🦀HP:${bossHP}`;bullet.remove();clearInterval(t);if(bossHP<=0){addScore(15);boss.remove();boss=null;bossHpText.textContent="";}return;}}
-for(let i=enemies.length-1;i>=0;i--){const e=enemies[i];const r=e.getBoundingClientRect();if(x>r.left&&x<r.right&&y>r.top&&y<r.bottom){handleHit(e,i);bullet.remove();clearInterval(t);return;}}
-if(y<0){bullet.remove();clearInterval(t);}
+@@ -247,6 +312,113 @@ <h1 data-template-id="custom-title" class="canva-text" style="font-size:24px;"><
 },16);
 }
 
@@ -422,19 +233,7 @@ function startGame(level) {
 function handleHit(e,i){
 const type=e.dataset.type;
 if(type==="powerup")activateRapid();
-else if(type==="shield")activateShield();
-else if(type==="freeze")activateFreeze();
-else if(type==="double")activateDouble();
-else if(type==="trident")activateTrident();
-else if(type==="tsunami"){clearAllEnemies();addScore(5);}
-else if(type==="bomb"){if(!shieldActive){score-=2;combo=0;}else combo++;}
-else if(type==="shark"){e.dataset.hp=parseInt(e.dataset.hp||2)-1;if(e.dataset.hp>0){e.style.opacity="0.6";document.getElementById("comboCounter").textContent=combo;return;}combo++;if(combo>maxCombo)maxCombo=combo;addScore(3);}
-else if(type==="shell"){combo++;if(combo>maxCombo)maxCombo=combo;addScore(3);}
-else{combo++;if(combo>maxCombo)maxCombo=combo;addScore(1);}
-scoreText.textContent=score;
-document.getElementById("comboCounter").textContent=combo;
-updateComboBonus();
-e.remove();enemies.splice(i,1);
+@@ -266,21 +438,80 @@ <h1 data-template-id="custom-title" class="canva-text" style="font-size:24px;"><
 checkMilestone();
 }
 
@@ -515,8 +314,7 @@ function shoot(x) {
 function showMilestone(val){
 const el=document.createElement("div");
 el.className="milestone";
-el.textContent=val>=100?"🏆🎊":"🎉"+val+"!";
-document.body.appendChild(el);
+@@ -289,6 +520,28 @@ <h1 data-template-id="custom-title" class="canva-text" style="font-size:24px;"><
 setTimeout(()=>el.remove(),1600);
 }
 
@@ -545,26 +343,7 @@ function spawnEnemy() {
 function spawnEnemy(){
 if(!started||boss)return;
 const r=Math.random();
-const e=document.createElement("div");
-e.className="enemy";
-let type,emoji,speed=enemySpeed;
-if(r<bombRate&&customConfig.bomb){type="bomb";emoji="🪼";if(showBorders)e.classList.add("penalty");}
-else if(r<bombRate+0.08&&customConfig.shark){type="shark";emoji="🦈";e.dataset.hp="2";speed=enemySpeed*0.7;if(showBorders)e.classList.add("scoring");}
-else if(r<bombRate+0.14&&customConfig.shell){type="shell";emoji="🐚";speed=enemySpeed*1.3;if(showBorders)e.classList.add("scoring");}
-else if(r<bombRate+0.22&&customConfig.puffer){type="puffer";emoji="🐡";speed=enemySpeed*1.1;if(showBorders)e.classList.add("scoring");}
-else if(!r<bombRate+0.3){type="gift";emoji="🥥";if(showBorders)e.classList.add("scoring");}
-else return;
-e.textContent=emoji;e.dataset.type=type;
-e.style.left=Math.random()*(innerWidth-40)+"px";e.style.top="-40px";
-gameArea.appendChild(e);enemies.push(e);
-let y=-40,zigTime=0;
-const f=setInterval(()=>{
-if(!started){e.remove();clearInterval(f);return;}
-if(!freezeActive){
-y+=speed;zigTime++;
-if(type==="puffer")e.style.left=parseFloat(e.style.left)+Math.sin(zigTime*0.1)*2+"px";
-e.style.top=y+"px";
-if(y>innerHeight){e.remove();clearInterval(f);enemies=enemies.filter(x=>x!==e);if(type==="gift"||type==="shell"){combo=0;document.getElementById("comboCounter").textContent=0;updateComboBonus();}}
+@@ -315,6 +568,18 @@ <h1 data-template-id="custom-title" class="canva-text" style="font-size:24px;"><
 }},20);
 }
 
@@ -583,21 +362,7 @@ function checkBoss() {
 function spawnPowerup(){
 if(!started||boss)return;
 const types=["rapid","shield","freeze","double","trident","tsunami"];
-const emojis=["⭐","🛡️","⏳","🐠","🔱","🌊"];
-let available=[];
-[0,1,2,3,4,5].forEach(i=>{
-const key=["rapid","shield","freeze","double","trident","tsunami"][i];
-if(customConfig[key])available.push(i);
-});
-if(available.length===0)return;
-const idx=available[Math.floor(Math.random()*available.length)];
-const e=document.createElement("div");
-e.className="powerup special";e.textContent=emojis[idx];
-e.dataset.type=types[idx]==="rapid"?"powerup":types[idx];
-if(!showBorders)e.classList.remove("special");
-e.style.left=Math.random()*(innerWidth-40)+"px";e.style.top="-40px";
-gameArea.appendChild(e);enemies.push(e);
-let y=-40;
+@@ -336,6 +601,10 @@ <h1 data-template-id="custom-title" class="canva-text" style="font-size:24px;"><
 const f=setInterval(()=>{if(!started){e.remove();clearInterval(f);return;}if(!freezeActive){y+=2;e.style.top=y+"px";if(y>innerHeight){e.remove();clearInterval(f);enemies=enemies.filter(x=>x!==e);}}},20);
 }
 
@@ -608,11 +373,7 @@ function moveBoss() {
 function activateRapid(){rapidFire=true;show("rapidIndicator");clearTimeout(rapidTimer);rapidTimer=setTimeout(()=>{rapidFire=false;hide("rapidIndicator");},5000);}
 function activateShield(){shieldActive=true;show("shieldIndicator");clearTimeout(shieldTimer);shieldTimer=setTimeout(()=>{shieldActive=false;hide("shieldIndicator");},6000);}
 function activateFreeze(){freezeActive=true;show("freezeIndicator");clearTimeout(freezeTimer);freezeTimer=setTimeout(()=>{freezeActive=false;hide("freezeIndicator");},4000);}
-function activateDouble(){doublePoints=true;show("doubleIndicator");clearTimeout(doubleTimer);doubleTimer=setTimeout(()=>{doublePoints=false;hide("doubleIndicator");},6000);}
-function activateTrident(){tripleShot=true;show("tripleIndicator");clearTimeout(tripleTimer);tripleTimer=setTimeout(()=>{tripleShot=false;hide("tripleIndicator");},5000);}
-
-function clearAllEnemies(){
-enemies.forEach(e=>{if(e.dataset.type!=="bomb")score+=1;e.remove();});
+@@ -347,9 +616,12 @@ <h1 data-template-id="custom-title" class="canva-text" style="font-size:24px;"><
 enemies=[];scoreText.textContent=score;
 }
 
@@ -625,11 +386,7 @@ function hide(id){document.getElementById(id).style.display="none";}
 function checkBoss(){if(score>0&&score%25===0&&!boss&&started){
 boss=document.createElement("div");boss.className="boss";boss.textContent="🦀";
 bossHP=bossMaxHP;bossHpText.textContent=` ｜🦀HP:${bossHP}`;
-boss.style.left="40%";boss.style.top="60px";gameArea.appendChild(boss);}}
-
-function moveBoss(){
-const step=3;let left=boss.offsetLeft+step*bossDirection;
-if(left<0)bossDirection=1;if(left>window.innerWidth-boss.offsetWidth)bossDirection=-1;
+@@ -361,13 +633,34 @@ <h1 data-template-id="custom-title" class="canva-text" style="font-size:24px;"><
 boss.style.left=left+"px";
 }
 
@@ -664,21 +421,7 @@ gameArea.appendChild(b);bossBullets.push(b);
 function moveBossBullets(){
 for(let i=bossBullets.length-1;i>=0;i--){
 const b=bossBullets[i];let t=parseFloat(b.style.top)+5;b.style.top=t+"px";
-if(t>innerHeight-60){
-const bx=parseFloat(b.style.left);
-if(Math.abs(bx-playerX)<30&&!shieldActive){combo=0;document.getElementById("comboCounter").textContent=0;updateComboBonus();score-=3;scoreText.textContent=score;}
-b.remove();bossBullets.splice(i,1);
-}else if(t>innerHeight){b.remove();bossBullets.splice(i,1);}
-}}
-
-function spawnBubble(){
-if(!started)return;
-const b=document.createElement("div");b.className="bubble";
-const size=Math.random()*20+10;b.style.width=size+"px";b.style.height=size+"px";
-b.style.left=Math.random()*innerWidth+"px";document.body.appendChild(b);
-let y=innerHeight+20;
-const f=setInterval(()=>{y-=1.2;b.style.bottom=(innerHeight-y)+"px";if(y<-30){b.remove();clearInterval(f);}},30);
-}
+@@ -389,3 +682,16 @@ <h1 data-template-id="custom-title" class="canva-text" style="font-size:24px;"><
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a11c4cf4561df067',t:'MTc4MjQ3NzgzNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
