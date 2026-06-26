@@ -1,5 +1,18 @@
+<!DOCTYPE html>
 <!doctype html>
 <html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>🎄 聖誕射擊遊戲</title>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background: linear-gradient(#0a2a66, #0f4fa8);
+    font-family: Arial, sans-serif;
  <head><script src="/_sdk/telemetry_sdk.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -152,10 +165,30 @@ intervals.push(setInterval(bossAttack,2200));
 intervals.push(setInterval(moveBossBullets,16));
 }
 
+/* HUD */
+#hud {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    padding: 8px 14px;
+    background: rgba(0,0,0,0.4);
+    border-radius: 12px;
+    color: white;
+    font-size: 18px;
+    z-index: 10;
 function hideAllIndicators(){
 ["rapidIndicator","shieldIndicator","freezeIndicator","doubleIndicator","tripleIndicator"].forEach(id=>document.getElementById(id).style.display="none");
 }
 
+/* 畫面遮罩 */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
 function endGame(){
 started=false;clearInterval(timerId);intervals.forEach(clearInterval);intervals=[];
 document.getElementById("resultScreen").style.display="flex";
@@ -164,6 +197,13 @@ document.getElementById("resultTitle").textContent=win?"🎉 過關！":"😢 �
 document.getElementById("resultText").textContent=`分數：${score} ／ 目標：${targetScore}\n最高連擊：${maxCombo}\n遊戲時長：${elapsed}s`;
 }
 
+.card {
+    background: #1c2f66;
+    border-radius: 18px;
+    padding: 32px 40px;
+    width: 420px;
+    color: white;
+    text-align: center;
 function returnToStart(){
 document.getElementById("startScreen").style.display="flex";
 document.getElementById("resultScreen").style.display="none";
@@ -171,11 +211,18 @@ document.getElementById("customScreen").style.display="none";
 gameArea.innerHTML="";bossBullets=[];
 }
 
+.card h1 {
+    margin-bottom: 10px;
+    font-size: 34px;
 function showCustomMode(){
 document.getElementById("startScreen").style.display="none";
 document.getElementById("customScreen").style.display="flex";
 }
 
+.card p {
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 6px 0;
 function startCustom(){
 const time=parseInt(document.getElementById("custom-time").value)||60;
 const score_val=parseInt(document.getElementById("custom-score").value)||50;
@@ -196,6 +243,14 @@ document.getElementById("customScreen").style.display="none";
 startGameWithSettings(time,score_val);
 }
 
+.card button {
+    width: 200px;
+    margin: 10px 0;
+    padding: 12px;
+    font-size: 18px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
 function startGameWithSettings(duration,target){
 document.getElementById("startScreen").style.display="none";
 started=true;score=0;enemies=[];boss=null;combo=0;maxCombo=0;
@@ -219,6 +274,11 @@ intervals.push(setInterval(bossAttack,2200));
 intervals.push(setInterval(moveBossBullets,16));
 }
 
+/* 遊戲元素 */
+#gameArea {
+    position: relative;
+    width: 100%;
+    height: 100%;
 window.addEventListener("mousemove",e=>{if(started){playerX=e.clientX;player.style.left=e.clientX-22+"px";}});
 window.addEventListener("touchmove",e=>{if(started){e.preventDefault();playerX=e.touches[0].clientX;player.style.left=e.touches[0].clientX-22+"px";}},{passive:false});
 window.addEventListener("mousedown",e=>{if(started)shoot(e.clientX);});
@@ -233,6 +293,11 @@ if(tripleShot){fireBullet(x-20);fireBullet(x);fireBullet(x+20);}
 else{fireBullet(x);}
 }
 
+#player {
+    position: fixed;
+    bottom: 10px;
+    font-size: 42px;
+    pointer-events: none;
 function fireBullet(x){
 const bullet=document.createElement("div");
 bullet.className="bullet";bullet.textContent="💧";
@@ -247,6 +312,113 @@ if(y<0){bullet.remove();clearInterval(t);}
 },16);
 }
 
+.enemy { position: absolute; font-size: 36px; }
+.bullet { position: absolute; font-size: 22px; }
+.boss { position: absolute; font-size: 72px; }
+.snow { position: fixed; top: -10px; color: white; pointer-events: none; }
+</style>
+</head>
+
+<body>
+
+<!-- 開始畫面 -->
+<div id="startScreen" class="overlay">
+    <div class="card">
+        <h1>🎄 聖誕射擊</h1>
+        <p>🎯 目標：在時間內達成指定分數</p>
+        <p>🎁 禮物 +1　💣 炸彈 -2</p>
+        <p>👹 Boss 打倒可獲得大量分數</p>
+        <hr>
+        <p>🟢 簡單：60 秒｜目標 60 分</p>
+        <p>🔵 普通：50 秒｜目標 40 分</p>
+        <p>🔴 困難：40 秒｜目標 20 分</p>
+        <button onclick="startGame('easy')">簡單</button>
+        <button onclick="startGame('normal')">普通</button>
+        <button onclick="startGame('hard')">困難</button>
+    </div>
+</div>
+
+<!-- 結果畫面 -->
+<div id="resultScreen" class="overlay" style="display:none;">
+    <div class="card">
+        <h1 id="resultTitle"></h1>
+        <p id="resultText"></p>
+        <button onclick="location.reload()">再玩一次</button>
+    </div>
+</div>
+
+<div id="hud">
+    分數：<span id="score">0</span>｜
+    時間：<span id="time">0</span>s
+    <span id="bossHp"></span>
+</div>
+
+<div id="gameArea"></div>
+<div id="player">🎅</div>
+
+<script>
+const gameArea = document.getElementById("gameArea");
+const scoreText = document.getElementById("score");
+const timeText = document.getElementById("time");
+const bossHpText = document.getElementById("bossHp");
+const player = document.getElementById("player");
+
+let started = false;
+let score = 0;
+let timeLeft = 0;
+let targetScore = 0;
+let enemies = [];
+let boss = null;
+let bossHP = 0;
+let timerId;
+let bossDirection = 1; // Boss 水平移動方向
+
+/* 難度參數 */
+let enemySpeed = 3;
+let spawnRate = 700;
+let bombRate = 0.3;
+let bossMaxHP = 18;
+
+/* 雪 */
+let snowCount = 0;
+const MAX_SNOW = 40;
+
+function startGame(level) {
+    document.getElementById("startScreen").style.display = "none";
+    started = true;
+    score = 0;
+    enemies = [];
+    boss = null;
+    bossHpText.textContent = "";
+
+    if (level === "easy") {
+        timeLeft = 60; targetScore = 60;
+        enemySpeed = 2; spawnRate = 900; bombRate = 0.2; bossMaxHP = 12;
+    } else if (level === "normal") {
+        timeLeft = 50; targetScore = 40;
+        enemySpeed = 3; spawnRate = 700; bombRate = 0.3; bossMaxHP = 18;
+    } else { // 困難模式
+        timeLeft = 40; 
+        targetScore = 20; // 目標分數改為 20
+        enemySpeed = 3; 
+        spawnRate = 650; 
+        bombRate = 0.35;  
+        bossMaxHP = 18;  
+    }
+
+    scoreText.textContent = 0;
+    timeText.textContent = timeLeft;
+
+    timerId = setInterval(() => {
+        timeLeft--;
+        timeText.textContent = timeLeft;
+        if (timeLeft <= 0) endGame();
+    }, 1000);
+
+    setInterval(spawnEnemy, spawnRate);
+    setInterval(checkBoss, 800);
+    setInterval(createSnow, 180);
+    setInterval(() => { if(boss) moveBoss(); }, 16); // Boss 移動
 function handleHit(e,i){
 const type=e.dataset.type;
 if(type==="powerup")activateRapid();
@@ -266,21 +438,80 @@ e.remove();enemies.splice(i,1);
 checkMilestone();
 }
 
+function endGame() {
+    started = false;
+    clearInterval(timerId);
+    document.getElementById("resultScreen").style.display = "flex";
+    const win = score >= targetScore;
+    document.getElementById("resultTitle").textContent = win ? "🎉 成功！" : "😢 失敗";
+    document.getElementById("resultText").textContent =
+        `你的分數：${score} ／ 目標：${targetScore}`;
 function addScore(base){
 const mult=doublePoints?2:1;
 const comboMult=1+Math.floor(combo/10)*0.5;
 score+=Math.round(base*mult*comboMult);
 }
 
+/* 控制 */
+window.addEventListener("mousemove", e => {
+    if (started) player.style.left = e.clientX - 20 + "px";
+});
 function updateComboBonus(){
 const b=Math.floor(combo/10)*0.5;
 document.getElementById("comboBonus").textContent=b>0?` (x${1+b})`:"";
 }
 
+window.addEventListener("mousedown", e => {
+    if (started) shoot(e.clientX);
+});
 function checkMilestone(){
 [25,50,75,100].forEach(m=>{if(score>=m&&!milestones.has(m)){milestones.add(m);showMilestone(m);}});
 }
 
+/* 射擊 */
+function shoot(x) {
+    const bullet = document.createElement("div");
+    bullet.className = "bullet";
+    bullet.textContent = "❄";
+    bullet.style.left = x + "px";
+    bullet.style.top = innerHeight - 70 + "px";
+    gameArea.appendChild(bullet);
+
+    let y = innerHeight - 70;
+    const t = setInterval(() => {
+        y -= 12;
+        bullet.style.top = y + "px";
+
+        if (boss) {
+            const r = boss.getBoundingClientRect();
+            if (x > r.left && x < r.right && y > r.top && y < r.bottom) {
+                bossHP--;
+                bossHpText.textContent = ` ｜ 👹 HP:${bossHP}`;
+                bullet.remove(); clearInterval(t);
+                if (bossHP <= 0) {
+                    score += 15;
+                    scoreText.textContent = score;
+                    boss.remove(); boss = null;
+                    bossHpText.textContent = "";
+                }
+                return;
+            }
+        }
+
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            const e = enemies[i];
+            const r = e.getBoundingClientRect();
+            if (x > r.left && x < r.right && y > r.top && y < r.bottom) {
+                score += e.dataset.type === "gift" ? 1 : -2;
+                scoreText.textContent = score;
+                e.remove(); enemies.splice(i, 1);
+                bullet.remove(); clearInterval(t);
+                return;
+            }
+        }
+
+        if (y < 0) { bullet.remove(); clearInterval(t); }
+    }, 16);
 function showMilestone(val){
 const el=document.createElement("div");
 el.className="milestone";
@@ -289,6 +520,28 @@ document.body.appendChild(el);
 setTimeout(()=>el.remove(),1600);
 }
 
+/* 敵人 */
+function spawnEnemy() {
+    if (!started || boss) return;
+    const e = document.createElement("div");
+    e.className = "enemy";
+    const gift = Math.random() > bombRate;
+    e.textContent = gift ? "🎁" : "💣";
+    e.dataset.type = gift ? "gift" : "bomb";
+    e.style.left = Math.random() * (innerWidth - 40) + "px";
+    e.style.top = "-40px";
+    gameArea.appendChild(e);
+    enemies.push(e);
+
+    let y = -40;
+    const f = setInterval(() => {
+        y += enemySpeed;
+        e.style.top = y + "px";
+        if (y > innerHeight) {
+            e.remove(); clearInterval(f);
+            enemies = enemies.filter(x => x !== e);
+        }
+    }, 20);
 function spawnEnemy(){
 if(!started||boss)return;
 const r=Math.random();
@@ -315,6 +568,18 @@ if(y>innerHeight){e.remove();clearInterval(f);enemies=enemies.filter(x=>x!==e);i
 }},20);
 }
 
+/* Boss */
+function checkBoss() {
+    if (score > 0 && score % 20 === 0 && !boss) {
+        boss = document.createElement("div");
+        boss.className = "boss";
+        boss.textContent = "👹";
+        bossHP = bossMaxHP;
+        bossHpText.textContent = ` ｜ 👹 HP:${bossHP}`;
+        boss.style.left = "40%";
+        boss.style.top = "70px";
+        gameArea.appendChild(boss);
+    }
 function spawnPowerup(){
 if(!started||boss)return;
 const types=["rapid","shield","freeze","double","trident","tsunami"];
@@ -336,6 +601,10 @@ let y=-40;
 const f=setInterval(()=>{if(!started){e.remove();clearInterval(f);return;}if(!freezeActive){y+=2;e.style.top=y+"px";if(y>innerHeight){e.remove();clearInterval(f);enemies=enemies.filter(x=>x!==e);}}},20);
 }
 
+/* Boss 水平移動 */
+function moveBoss() {
+    const step = 2; // 每次移動 2px
+    let left = boss.offsetLeft + step * bossDirection;
 function activateRapid(){rapidFire=true;show("rapidIndicator");clearTimeout(rapidTimer);rapidTimer=setTimeout(()=>{rapidFire=false;hide("rapidIndicator");},5000);}
 function activateShield(){shieldActive=true;show("shieldIndicator");clearTimeout(shieldTimer);shieldTimer=setTimeout(()=>{shieldActive=false;hide("shieldIndicator");},6000);}
 function activateFreeze(){freezeActive=true;show("freezeIndicator");clearTimeout(freezeTimer);freezeTimer=setTimeout(()=>{freezeActive=false;hide("freezeIndicator");},4000);}
@@ -347,9 +616,12 @@ enemies.forEach(e=>{if(e.dataset.type!=="bomb")score+=1;e.remove();});
 enemies=[];scoreText.textContent=score;
 }
 
+    if (left < 0) bossDirection = 1;
+    if (left > window.innerWidth - boss.offsetWidth) bossDirection = -1;
 function show(id){document.getElementById(id).style.display="block";}
 function hide(id){document.getElementById(id).style.display="none";}
 
+    boss.style.left = boss.offsetLeft + step * bossDirection + "px";
 function checkBoss(){if(score>0&&score%25===0&&!boss&&started){
 boss=document.createElement("div");boss.className="boss";boss.textContent="🦀";
 bossHP=bossMaxHP;bossHpText.textContent=` ｜🦀HP:${bossHP}`;
@@ -361,13 +633,34 @@ if(left<0)bossDirection=1;if(left>window.innerWidth-boss.offsetWidth)bossDirecti
 boss.style.left=left+"px";
 }
 
+/* 雪 */
+function createSnow() {
+    if (!started || snowCount >= MAX_SNOW) return;
+    snowCount++;
+    const s = document.createElement("div");
+    s.className = "snow";
+    s.textContent = "❄";
+    s.style.left = Math.random() * innerWidth + "px";
+    s.style.fontSize = Math.random() * 8 + 12 + "px";
+    document.body.appendChild(s);
+
+    let y = -10;
+    const f = setInterval(() => {
+        y += 1.5;
+        s.style.top = y + "px";
+        if (y > innerHeight) {
+            s.remove(); clearInterval(f); snowCount--;
+        }
+    }, 30);
 function bossAttack(){
 if(!boss||!started)return;
 const b=document.createElement("div");b.className="boss-bullet";b.textContent="🔥";
 b.style.left=boss.offsetLeft+30+"px";b.style.top=boss.offsetTop+60+"px";
 gameArea.appendChild(b);bossBullets.push(b);
 }
+</script>
 
+</body>
 function moveBossBullets(){
 for(let i=bossBullets.length-1;i>=0;i--){
 const b=bossBullets[i];let t=parseFloat(b.style.top)+5;b.style.top=t+"px";
@@ -389,3 +682,16 @@ const f=setInterval(()=>{y-=1.2;b.style.bottom=(innerHeight-y)+"px";if(y<-30){b.
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a11c4cf4561df067',t:'MTc4MjQ3NzgzNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+s
+Footer
+© 2026 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+Security
+Status
+Community
+Docs
+Contact
+Manage cookies
+Do not share my personal information
