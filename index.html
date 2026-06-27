@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>🎄 聖誕射擊遊戲</title>
+
 <style>
 html, body {
     margin: 0;
@@ -10,74 +11,116 @@ html, body {
     height: 100%;
     overflow: hidden;
     background: linear-gradient(#0a2a66, #0f4fa8);
-    font-family: Arial;
+    font-family: Arial, sans-serif;
 }
 
 /* HUD */
 #hud {
     position: fixed;
-    top: 10px;
-    left: 10px;
+    top: 12px;
+    left: 12px;
+    padding: 8px 14px;
+    background: rgba(0,0,0,0.4);
+    border-radius: 12px;
     color: white;
     font-size: 18px;
     z-index: 10;
 }
 
-/* 遊戲區 */
+/* 畫面遮罩 */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.card {
+    background: #1c2f66;
+    border-radius: 18px;
+    padding: 32px 40px;
+    width: 420px;
+    color: white;
+    text-align: center;
+}
+
+.card h1 {
+    margin-bottom: 10px;
+    font-size: 34px;
+}
+
+.card p {
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 6px 0;
+}
+
+.card button {
+    width: 200px;
+    margin: 10px 0;
+    padding: 12px;
+    font-size: 18px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+/* 遊戲元素 */
 #gameArea {
     position: relative;
     width: 100%;
     height: 100%;
 }
 
-/* 玩家 */
 #player {
     position: fixed;
     bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
     font-size: 42px;
     pointer-events: none;
-    z-index: 5;
 }
 
-/* 子彈 */
-.bullet {
-    position: absolute;
-    font-size: 22px;
-    pointer-events: none;
-}
-
-/* 一般敵人 */
-.enemy {
-    position: absolute;
-    font-size: 36px;
-    user-select: none;
-}
-
-/* Boss */
-.boss {
-    position: absolute;
-    font-size: 72px;
-    user-select: none;
-}
-
-/* 雪花背景 */
-.snow {
-    position: fixed;
-    top: -10px;
-    color: white;
-    pointer-events: none;
-    user-select: none;
-}
+.enemy { position: absolute; font-size: 36px; }
+.bullet { position: absolute; font-size: 22px; }
+.boss { position: absolute; font-size: 72px; }
+.snow { position: fixed; top: -10px; color: white; pointer-events: none; }
 </style>
 </head>
 
 <body>
 
+<!-- 開始畫面 -->
+<div id="startScreen" class="overlay">
+    <div class="card">
+        <h1>🎄 聖誕射擊</h1>
+        <p>🎯 目標：在時間內達成指定分數</p>
+        <p>🎁 禮物 +1　💣 炸彈 -2</p>
+        <p>👹 Boss 打倒可獲得大量分數</p>
+        <hr>
+        <p>🟢 簡單：60 秒｜目標 60 分</p>
+        <p>🔵 普通：50 秒｜目標 40 分</p>
+        <p>🔴 困難：40 秒｜目標 20 分</p>
+        <button onclick="startGame('easy')">簡單</button>
+        <button onclick="startGame('normal')">普通</button>
+        <button onclick="startGame('hard')">困難</button>
+    </div>
+</div>
+
+<!-- 結果畫面 -->
+<div id="resultScreen" class="overlay" style="display:none;">
+    <div class="card">
+        <h1 id="resultTitle"></h1>
+        <p id="resultText"></p>
+        <button onclick="location.reload()">再玩一次</button>
+    </div>
+</div>
+
 <div id="hud">
-分數：<span id="score">0</span>
-<span id="bossHp"></span>
+    分數：<span id="score">0</span>｜
+    時間：<span id="time">0</span>s
+    <span id="bossHp"></span>
 </div>
 
 <div id="gameArea"></div>
@@ -86,149 +129,204 @@ html, body {
 <script>
 const gameArea = document.getElementById("gameArea");
 const scoreText = document.getElementById("score");
+const timeText = document.getElementById("time");
 const bossHpText = document.getElementById("bossHp");
+const player = document.getElementById("player");
 
+let started = false;
 let score = 0;
+let timeLeft = 0;
+let targetScore = 0;
 let enemies = [];
 let boss = null;
 let bossHP = 0;
+let timerId;
+let bossDirection = 1; // Boss 水平移動方向
 
-/* 滑鼠移動控制 */
+/* 難度參數 */
+let enemySpeed = 3;
+let spawnRate = 700;
+let bombRate = 0.3;
+let bossMaxHP = 18;
+
+/* 雪 */
+let snowCount = 0;
+const MAX_SNOW = 40;
+
+function startGame(level) {
+    document.getElementById("startScreen").style.display = "none";
+    started = true;
+    score = 0;
+    enemies = [];
+    boss = null;
+    bossHpText.textContent = "";
+
+    if (level === "easy") {
+        timeLeft = 60; targetScore = 60;
+        enemySpeed = 2; spawnRate = 900; bombRate = 0.2; bossMaxHP = 12;
+    } else if (level === "normal") {
+        timeLeft = 50; targetScore = 40;
+        enemySpeed = 3; spawnRate = 700; bombRate = 0.3; bossMaxHP = 18;
+    } else { // 困難模式
+        timeLeft = 40; 
+        targetScore = 20; // 目標分數改為 20
+        enemySpeed = 3; 
+        spawnRate = 650; 
+        bombRate = 0.35;  
+        bossMaxHP = 18;  
+    }
+
+    scoreText.textContent = 0;
+    timeText.textContent = timeLeft;
+
+    timerId = setInterval(() => {
+        timeLeft--;
+        timeText.textContent = timeLeft;
+        if (timeLeft <= 0) endGame();
+    }, 1000);
+
+    setInterval(spawnEnemy, spawnRate);
+    setInterval(checkBoss, 800);
+    setInterval(createSnow, 180);
+    setInterval(() => { if(boss) moveBoss(); }, 16); // Boss 移動
+}
+
+function endGame() {
+    started = false;
+    clearInterval(timerId);
+    document.getElementById("resultScreen").style.display = "flex";
+    const win = score >= targetScore;
+    document.getElementById("resultTitle").textContent = win ? "🎉 成功！" : "😢 失敗";
+    document.getElementById("resultText").textContent =
+        `你的分數：${score} ／ 目標：${targetScore}`;
+}
+
+/* 控制 */
 window.addEventListener("mousemove", e => {
-    document.getElementById("player").style.left = e.clientX + "px";
+    if (started) player.style.left = e.clientX - 20 + "px";
 });
 
-/* 滑鼠射擊 */
 window.addEventListener("mousedown", e => {
-    shoot(e.clientX);
+    if (started) shoot(e.clientX);
 });
 
+/* 射擊 */
 function shoot(x) {
     const bullet = document.createElement("div");
     bullet.className = "bullet";
-    bullet.innerText = "❄";
+    bullet.textContent = "❄";
     bullet.style.left = x + "px";
-    bullet.style.top = (window.innerHeight - 70) + "px";
+    bullet.style.top = innerHeight - 70 + "px";
     gameArea.appendChild(bullet);
 
-    let y = window.innerHeight - 70;
-    const move = setInterval(() => {
+    let y = innerHeight - 70;
+    const t = setInterval(() => {
         y -= 12;
         bullet.style.top = y + "px";
 
-        /* 打 Boss */
         if (boss) {
             const r = boss.getBoundingClientRect();
             if (x > r.left && x < r.right && y > r.top && y < r.bottom) {
                 bossHP--;
-                bossHpText.innerText = ` ｜ 👹 HP:${bossHP}`;
-                bullet.remove();
-                clearInterval(move);
-
+                bossHpText.textContent = ` ｜ 👹 HP:${bossHP}`;
+                bullet.remove(); clearInterval(t);
                 if (bossHP <= 0) {
                     score += 15;
-                    scoreText.innerText = score;
-                    boss.remove();
-                    boss = null;
-                    bossHpText.innerText = "";
+                    scoreText.textContent = score;
+                    boss.remove(); boss = null;
+                    bossHpText.textContent = "";
                 }
                 return;
             }
         }
 
-        /* 打一般敵人 */
-        enemies.forEach((enemy, index) => {
-            const r = enemy.getBoundingClientRect();
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            const e = enemies[i];
+            const r = e.getBoundingClientRect();
             if (x > r.left && x < r.right && y > r.top && y < r.bottom) {
-                score += enemy.dataset.type === "gift" ? 1 : -2;
-                scoreText.innerText = score;
-                enemy.remove();
-                enemies.splice(index, 1);
-                bullet.remove();
-                clearInterval(move);
+                score += e.dataset.type === "gift" ? 1 : -2;
+                scoreText.textContent = score;
+                e.remove(); enemies.splice(i, 1);
+                bullet.remove(); clearInterval(t);
+                return;
             }
-        });
-
-        if (y < 0) {
-            bullet.remove();
-            clearInterval(move);
         }
+
+        if (y < 0) { bullet.remove(); clearInterval(t); }
     }, 16);
 }
 
-/* 一般敵人生成 */
+/* 敵人 */
 function spawnEnemy() {
-    if (boss) return;
-
-    const enemy = document.createElement("div");
-    enemy.className = "enemy";
-
-    const isGift = Math.random() > 0.3;
-    enemy.innerText = isGift ? "🎁" : "💣";
-    enemy.dataset.type = isGift ? "gift" : "bomb";
-
-    enemy.style.left = Math.random() * (window.innerWidth - 40) + "px";
-    enemy.style.top = "-40px";
-
-    gameArea.appendChild(enemy);
-    enemies.push(enemy);
+    if (!started || boss) return;
+    const e = document.createElement("div");
+    e.className = "enemy";
+    const gift = Math.random() > bombRate;
+    e.textContent = gift ? "🎁" : "💣";
+    e.dataset.type = gift ? "gift" : "bomb";
+    e.style.left = Math.random() * (innerWidth - 40) + "px";
+    e.style.top = "-40px";
+    gameArea.appendChild(e);
+    enemies.push(e);
 
     let y = -40;
-    const fall = setInterval(() => {
-        y += 3;
-        enemy.style.top = y + "px";
-        if (y > window.innerHeight) {
-            clearInterval(fall);
-            enemy.remove();
+    const f = setInterval(() => {
+        y += enemySpeed;
+        e.style.top = y + "px";
+        if (y > innerHeight) {
+            e.remove(); clearInterval(f);
+            enemies = enemies.filter(x => x !== e);
         }
     }, 20);
 }
 
-/* Boss 出現 */
-function spawnBoss() {
-    if (boss) return;
-    boss = document.createElement("div");
-    boss.className = "boss";
-    boss.innerText = "👹";
-    bossHP = 18;
-    bossHpText.innerText = ` ｜ 👹 HP:${bossHP}`;
-
-    boss.style.left = (window.innerWidth / 2 - 36) + "px";
-    boss.style.top = "70px";
-    gameArea.appendChild(boss);
+/* Boss */
+function checkBoss() {
+    if (score > 0 && score % 20 === 0 && !boss) {
+        boss = document.createElement("div");
+        boss.className = "boss";
+        boss.textContent = "👹";
+        bossHP = bossMaxHP;
+        bossHpText.textContent = ` ｜ 👹 HP:${bossHP}`;
+        boss.style.left = "40%";
+        boss.style.top = "70px";
+        gameArea.appendChild(boss);
+    }
 }
 
-/* 分數觸發 Boss */
-setInterval(() => {
-    if (score > 0 && score % 20 === 0 && !boss) {
-        spawnBoss();
-    }
-}, 1000);
+/* Boss 水平移動 */
+function moveBoss() {
+    const step = 2; // 每次移動 2px
+    let left = boss.offsetLeft + step * bossDirection;
 
-/* 一般敵人產生 */
-setInterval(spawnEnemy, 700);
+    if (left < 0) bossDirection = 1;
+    if (left > window.innerWidth - boss.offsetWidth) bossDirection = -1;
 
-/* ❄ 白色雪花背景 */
+    boss.style.left = boss.offsetLeft + step * bossDirection + "px";
+}
+
+/* 雪 */
 function createSnow() {
-    const snow = document.createElement("div");
-    snow.className = "snow";
-    snow.innerText = "❄";
-    snow.style.left = Math.random() * window.innerWidth + "px";
-    snow.style.fontSize = Math.random() * 10 + 12 + "px";
-    document.body.appendChild(snow);
+    if (!started || snowCount >= MAX_SNOW) return;
+    snowCount++;
+    const s = document.createElement("div");
+    s.className = "snow";
+    s.textContent = "❄";
+    s.style.left = Math.random() * innerWidth + "px";
+    s.style.fontSize = Math.random() * 8 + 12 + "px";
+    document.body.appendChild(s);
 
     let y = -10;
-    const fall = setInterval(() => {
-        y += 1.2;
-        snow.style.top = y + "px";
-        if (y > window.innerHeight) {
-            clearInterval(fall);
-            snow.remove();
+    const f = setInterval(() => {
+        y += 1.5;
+        s.style.top = y + "px";
+        if (y > innerHeight) {
+            s.remove(); clearInterval(f); snowCount--;
         }
     }, 30);
 }
-setInterval(createSnow, 180);
 </script>
 
 </body>
 </html>
+s
